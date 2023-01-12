@@ -1,0 +1,10 @@
+name: imbie_partitioning
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - numpy
+  - netCDF4
+  - matplotlib
+  - pandas
+  - xarray
