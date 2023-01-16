@@ -257,6 +257,7 @@ time_wever = np.array(wever_monthly.index.year + (wever_monthly.index.dayofyear-
 smb_wever_ais_zwally = wever_monthly['SMB Zwally'].values
 smb_wever_ais_rignot = wever_monthly['SMB Rignot'].values
 
+
 # =============================================================================
 # 3. Compare SMB datasets
 # =============================================================================
@@ -321,5 +322,31 @@ fig.clf()
 plt.close(fig)
 
 # =============================================================================
-# 4. Compare SMB datasets
+# 4. Combine SMB datasets
 # =============================================================================
+# average monthly SMB data
+# create dataframes
+########################################
+# Medley
+########################################
+medley_monthly = medley_monthly.reset_index()
+to_avg_smb_medley_ais_rignot = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB':medley_monthly['SMB Rignot']})
+
+to_avg_smb_medley_ais_zwally = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB':medley_monthly['SMB Zwally']})
+
+########################################
+# Averaging
+########################################
+# list of dataframes
+df_list = [to_avg_smb_medley_ais_rignot,
+           to_avg_smb_medley_ais_zwally]
+
+# set datetime column as the index for each dataframe
+
+for i, df in enumerate(df_list):
+    df_list[i] = df.set_index(pd.DatetimeIndex(df['Datetime']))
+    
+# average dataframes by datetime
+smb_average_ais = pd.concat(df_list, axis = 1).mean(axis = 1)
