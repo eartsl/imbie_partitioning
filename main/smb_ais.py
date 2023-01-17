@@ -269,50 +269,201 @@ gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 
 ax1 = fig.add_subplot(gs[0])
 
+# global plot parameters
 line_alpha = 0.5
-
+lw = 1.5
 ax1.plot(time_amory, smb_amory_ais_zwally,
          color = cmap(0),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Amory Zwally (MAR 3.12.1)',)
 
 ax1.plot(time_hansen, smb_hansen_ais_rignot,
          color = cmap(2),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Hansen Rignot (HIRHAM5)')
 
 ax1.plot(time_hansen, smb_hansen_ais_zwally,
          color = cmap(3),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Hansen Zwally (HIRHAM5)')
 
 ax1.plot(time_medley, smb_medley_ais_rignot,
          color = cmap(4),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Medley Rignot (MERRA-2)')
 
 ax1.plot(time_medley, smb_medley_ais_zwally,
          color = cmap(5),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Medley Zwally (MERRA-2)')
 
 ax1.plot(time_vwessem, smb_vwessem_ais,
          color = cmap(6),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Van Wessem (RACMO 2.3p2)')
 
 ax1.plot(time_wever, smb_wever_ais_rignot,
          color = cmap(8),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Wever Rignot (SNOWPACK)')
 
 ax1.plot(time_wever, smb_wever_ais_zwally,
          color = cmap(9),
          alpha = line_alpha,
+         linewidth = lw,
          label = 'Wever Zwally (SNOWPACK)')
+
+# =============================================================================
+# 4. Combine SMB datasets
+# =============================================================================
+# average monthly SMB data
+# create dataframes
+########################################
+# Amory 
+########################################
+amory_datetime = decimal_year_to_datetime(time_amory)
+
+to_avg_smb_amory_ais_zwally = pd.DataFrame({'Datetime':amory_datetime,
+                                           'SMB':smb_amory_ais_zwally})
+
+to_combine_smb_uncert_amory_ais_zwally = pd.DataFrame({'Datetime':amory_datetime,
+                                                       'SMB Uncertainty':smb_uncert_amory_ais_zwally})
+
+########################################
+# Hansen 
+########################################
+hansen_datetime = decimal_year_to_datetime(time_hansen)
+
+to_avg_smb_hansen_ais_rignot = pd.DataFrame({'Datetime':hansen_datetime,
+                                           'SMB':smb_hansen_ais_rignot})
+
+to_combine_smb_uncert_hansen_ais_rignot = pd.DataFrame({'Datetime':hansen_datetime,
+                                                       'SMB Uncertainty':smb_uncert_hansen_ais_rignot})
+
+to_avg_smb_hansen_ais_zwally = pd.DataFrame({'Datetime':hansen_datetime,
+                                           'SMB':smb_hansen_ais_zwally})
+
+to_combine_smb_uncert_hansen_ais_zwally = pd.DataFrame({'Datetime':hansen_datetime,
+                                                       'SMB Uncertainty':smb_uncert_hansen_ais_zwally})
+
+########################################
+# Medley
+########################################
+medley_monthly = medley_monthly.reset_index()
+to_avg_smb_medley_ais_rignot = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB':medley_monthly['SMB Rignot']})
+
+to_combine_smb_uncert_medley_ais_rignot = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB Uncertainty':medley_monthly['SMB Uncertainty Rignot']})
+
+to_avg_smb_medley_ais_zwally = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB':medley_monthly['SMB Zwally']})
+
+to_combine_smb_uncert_medley_ais_zwally = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
+                                             'SMB Uncertainty':medley_monthly['SMB Uncertainty Zwally']})
+
+########################################
+# van Wessem 
+########################################
+vwessem_datetime = decimal_year_to_datetime(time_vwessem)
+
+to_avg_smb_vwessem_ais = pd.DataFrame({'Datetime':vwessem_datetime,
+                                           'SMB':smb_vwessem_ais})
+
+to_combine_smb_uncert_vwessem_ais = pd.DataFrame({'Datetime':vwessem_datetime,
+                                                       'SMB Uncertainty':smb_uncert_vwessem_ais})
+
+########################################
+# Wever
+########################################
+wever_monthly = wever_monthly.reset_index()
+
+to_avg_smb_wever_ais_rignot = pd.DataFrame({'Datetime':wever_monthly['Datetime'],
+                                             'SMB':wever_monthly['SMB Rignot']})
+
+to_avg_smb_wever_ais_zwally = pd.DataFrame({'Datetime':wever_monthly['Datetime'],
+                                             'SMB':wever_monthly['SMB Zwally']})
+
+########################################
+# Combining
+########################################
+# average smb
+# list of dataframes
+df_list = [to_avg_smb_amory_ais_zwally,
+           to_avg_smb_hansen_ais_rignot,
+           to_avg_smb_hansen_ais_zwally,
+           to_avg_smb_medley_ais_rignot,
+           to_avg_smb_medley_ais_zwally,
+           to_avg_smb_vwessem_ais,
+           to_avg_smb_wever_ais_rignot]
+
+# Concatenate the dataframes
+concat_df = pd.concat(df_list)
+
+# Set the datetime column as the index
+concat_df.set_index('Datetime', inplace=True)
+
+# Add a column to show the number of dataframes used in each average
+concat_df['Count'] = 1
+
+# Resample by the datetime index and calculate the mean
+resampled_df = concat_df.resample('M').mean()
+resampled_df['Count'] = concat_df.resample('M').count()['Count']
+
+# drop where no data
+resampled_df = resampled_df[resampled_df['Count'] != 0]
+
+time_smb_combined = np.array(resampled_df.index.year + (resampled_df.index.dayofyear-1) / 365, dtype = float)
+smb_combined_ais = resampled_df['SMB'].values
+
+del df_list, concat_df, resampled_df
+
+# rms uncertainties
+df_list = [to_combine_smb_uncert_amory_ais_zwally,
+           to_combine_smb_uncert_hansen_ais_rignot,
+           to_combine_smb_uncert_hansen_ais_zwally,
+           to_combine_smb_uncert_medley_ais_rignot,
+           to_combine_smb_uncert_medley_ais_zwally,
+           to_combine_smb_uncert_vwessem_ais]
+
+# Concatenate the dataframes
+concat_df = pd.concat(df_list)
+
+# Set the datetime column as the index
+concat_df.set_index('Datetime', inplace=True)
+
+# Add a column to show the number of dataframes used in each average
+concat_df['Count'] = 1
+
+# Resample by the datetime index and calculate the root mean squared
+resampled_df = np.sqrt(concat_df.pow(2).resample('M').mean())
+resampled_df['Count'] = concat_df.resample('M').count()['Count']
+
+# drop where no data
+resampled_df = resampled_df[resampled_df['Count'] != 0]
+
+# divide by square root of number of datasets
+smb_combined_uncert_ais = resampled_df['SMB Uncertainty'].values / np.sqrt(resampled_df['Count'].values)
+    
+del df_list, concat_df, resampled_df
+
+# add to plot
+ax1.plot(time_smb_combined, smb_combined_ais,
+         color = 'k',
+         linewidth = lw/2,
+         label = 'Combined SMB')
 
 plt.xlabel('Year')
 plt.ylabel('Surface Mass Balance [Gt/month]')
+
+ax1.set_ylim(0, 350)
 
 plt.legend(loc = 'center left',
            bbox_to_anchor=(1, 0.5))
@@ -321,32 +472,46 @@ plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_ais_data
 fig.clf()
 plt.close(fig)
 
+# plot combined smb and uncertainty
+fig = plt.figure(figsize = (9,4),constrained_layout=True)
+gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
+
+ax1 = fig.add_subplot(gs[0])
+
+ax1.fill_between(time_smb_combined, smb_combined_ais - smb_combined_uncert_ais, smb_combined_ais + smb_combined_uncert_ais,
+                 color = 'k',
+                 alpha = 0.25,
+                 edgecolor = 'none')
+
+ax1.plot(time_smb_combined, smb_combined_ais,
+         color = 'k',
+         label = 'Combined SMB')
+
+plt.xlabel('Year')
+plt.ylabel('Surface Mass Balance [Gt/month]')
+
+ax1.set_ylim(0, 350)
+
+
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_ais.svg', format = 'svg', dpi = 600, bbox_inches='tight')
+fig.clf()
+plt.close(fig)
+
 # =============================================================================
-# 4. Combine SMB datasets
+# 5. Calculate cumulate anomaly of combined SMB
 # =============================================================================
-# average monthly SMB data
-# create dataframes
-########################################
-# Medley
-########################################
-medley_monthly = medley_monthly.reset_index()
-to_avg_smb_medley_ais_rignot = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
-                                             'SMB':medley_monthly['SMB Rignot']})
 
-to_avg_smb_medley_ais_zwally = pd.DataFrame({'Datetime':medley_monthly['Datetime'],
-                                             'SMB':medley_monthly['SMB Zwally']})
+# set reference period
+t1_ref, t2_ref = 1979, 2010
 
-########################################
-# Averaging
-########################################
-# list of dataframes
-df_list = [to_avg_smb_medley_ais_rignot,
-           to_avg_smb_medley_ais_zwally]
+smb_ref = smb_combined_ais[(time_smb_combined >= t1_ref) & (time_smb_combined < t2_ref)].mean()
 
-# set datetime column as the index for each dataframe
+smb_combined_anom_ais = smb_combined_ais - smb_ref
 
-for i, df in enumerate(df_list):
-    df_list[i] = df.set_index(pd.DatetimeIndex(df['Datetime']))
-    
-# average dataframes by datetime
-smb_average_ais = pd.concat(df_list, axis = 1).mean(axis = 1)
+smb_combined_cumul_anom_ais = smb_combined_anom_ais.cumsum()
+
+# smooth
+smb_combined_cumul_anom_ais_smoothed = pd.DataFrame(smb_combined_cumul_anom_ais).rolling(window = 36, min_periods = 1, center = True).mean().values
+
+plt.plot(time_smb_combined, smb_combined_cumul_anom_ais)
+plt.plot(time_smb_combined, smb_combined_cumul_anom_ais_smoothed)
