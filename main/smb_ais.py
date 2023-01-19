@@ -440,17 +440,17 @@ gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 ax1 = fig.add_subplot(gs[0])
 
 ax1.fill_between(time_combined, smb_combined_cumul_anom_ais_smoothed - smb_combined_cumul_anom_uncert_ais, smb_combined_cumul_anom_ais_smoothed + smb_combined_cumul_anom_uncert_ais,
-                 color = 'mediumaquamarine',
+                 color = cmap(0),
                  alpha = 0.25,
                  edgecolor = 'none')
 
 ax1.plot(time_combined, smb_combined_cumul_anom_ais,
-         color = 'lightcoral',
+         color = cmap(4),
          alpha = 0.5,
          label = 'Monthly')
 
 ax1.plot(time_combined, smb_combined_cumul_anom_ais_smoothed,
-         color = 'mediumaquamarine',
+         color = cmap(0),
          label = '36 month smoothed')
 
 ax1.set_ylim(-1000, 1000)
@@ -500,7 +500,6 @@ dyn_imbie = dm_imbie - smb_imbie
 dyn_uncert_imbie = np.sqrt(dm_uncert_imbie ** 2 + smb_uncert_imbie ** 2)
 
 # plot partitioned mass balance
-cmap = plt.cm.get_cmap('Accent')
 fig = plt.figure(figsize = (7,3),constrained_layout=True)
 gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 
@@ -508,32 +507,32 @@ ax1 = fig.add_subplot(gs[0])
 
 # smb
 ax1.fill_between(time_imbie, smb_imbie - smb_uncert_imbie, smb_imbie + smb_uncert_imbie,
-                 color = cmap(1),
-                 alpha = 0.5,
-                 edgecolor = 'none')
-
-ax1.plot(time_imbie, smb_imbie,
-         color = cmap(1),
-         label = 'Surface')
-
-# dynamics
-ax1.fill_between(time_imbie, dyn_imbie - dyn_uncert_imbie, dyn_imbie + dyn_uncert_imbie,
                  color = cmap(2),
                  alpha = 0.5,
                  edgecolor = 'none')
 
-ax1.plot(time_imbie, dyn_imbie,
+ax1.plot(time_imbie, smb_imbie,
          color = cmap(2),
-         label = 'Dynamics')
+         label = 'Surface')
 
-# total
-ax1.fill_between(time_imbie, dm_imbie - dm_uncert_imbie, dm_imbie + dm_uncert_imbie,
+# dynamics
+ax1.fill_between(time_imbie, dyn_imbie - dyn_uncert_imbie, dyn_imbie + dyn_uncert_imbie,
                  color = cmap(0),
                  alpha = 0.5,
                  edgecolor = 'none')
 
-ax1.plot(time_imbie, dm_imbie,
+ax1.plot(time_imbie, dyn_imbie,
          color = cmap(0),
+         label = 'Dynamics')
+
+# total
+ax1.fill_between(time_imbie, dm_imbie - dm_uncert_imbie, dm_imbie + dm_uncert_imbie,
+                 color = cmap(1),
+                 alpha = 0.5,
+                 edgecolor = 'none')
+
+ax1.plot(time_imbie, dm_imbie,
+         color = cmap(1),
          label = 'Total')
 
 plt.xlabel('Year')
