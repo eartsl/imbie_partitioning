@@ -29,6 +29,8 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 
+from dm_to_dmdt import dm_to_dmdt
+
 # =============================================================================
 # 1. load AIS SMB datasets
 # =============================================================================
@@ -548,3 +550,6 @@ plt.close(fig)
 # =============================================================================
 # 8. Save IMBIE outputs
 # =============================================================================
+# convert anomaly to dM/dt
+
+smb_combined_cumul_anom_ais_smoothed_dmdt, num_points = dm_to_dmdt(time_combined, smb_combined_cumul_anom_ais_smoothed, 36)
