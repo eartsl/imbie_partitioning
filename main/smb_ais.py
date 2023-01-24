@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 from dm_to_dmdt import dm_to_dmdt
 
 # =============================================================================
-# 1. load AIS SMB datasets
+# 1. load SMB datasets
 # =============================================================================
 ########################################
 # Amory (Zwally only, monthly, uncertainty)
@@ -40,12 +40,12 @@ from dm_to_dmdt import dm_to_dmdt
 amory = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/smb_datasets/Amory_surface-mass-balance_62b1b713be3696.98550746/mass-balance-data/kittel_amory_agosta_AIS_Zwally.dat',
                     float_precision = 'round_trip')
 
-# find indices of AIS smb (Zwally region)
+# find indices of smb (Zwally region)
 amory_idx_zwally = np.where(amory['Drainage Region ID'] == 'ais')
 # monthly time resolution
 time_amory = amory['Date (decimal years)'].iloc[amory_idx_zwally].values
-smb_amory_ais_zwally = amory['Relative Mass Change (Gt)'].iloc[amory_idx_zwally].values
-smb_uncert_amory_ais_zwally = amory['Relative Mass Change Uncertainty (Gt)'].iloc[amory_idx_zwally].values
+smb_amory_zwally = amory['Relative Mass Change (Gt)'].iloc[amory_idx_zwally].values
+smb_uncert_amory_zwally = amory['Relative Mass Change Uncertainty (Gt)'].iloc[amory_idx_zwally].values
 
 ########################################
 # Hansen (Zwally and Rignot, monthly, uncertainty)
@@ -53,17 +53,17 @@ smb_uncert_amory_ais_zwally = amory['Relative Mass Change Uncertainty (Gt)'].ilo
 hansen = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/smb_datasets/Hansen_surface-mass-balance_626c00297df776.22516405/mass-balance-data/Hansen_SMB_IMBIE3_data.txt',
                      float_precision = 'round_trip')
 
-# find indices of AIS smb (Zwally region)
+# find indices of smb (Zwally region)
 hansen_idx_zwally = np.where((hansen['Drainage Region Set'] == 'Zwally') & (hansen['Drainage Region ID'] == 'AIS'))
 # monthly time resolution
 time_hansen = hansen['Date (decimal years)'].iloc[hansen_idx_zwally].values
-smb_hansen_ais_zwally = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_zwally].values
-smb_uncert_hansen_ais_zwally = hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_zwally].values
+smb_hansen_zwally = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_zwally].values
+smb_uncert_hansen_zwally = hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_zwally].values
 
-# find indices of AIS smb (Rignot region)
+# find indices of smb (Rignot region)
 hansen_idx_rignot = np.where((hansen['Drainage Region Set'] == 'Rignot') & (hansen['Drainage Region ID'] == 'AIS'))
-smb_hansen_ais_rignot = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_rignot].values
-smb_uncert_hansen_ais_rignot = hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_rignot].values
+smb_hansen_rignot = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_rignot].values
+smb_uncert_hansen_rignot = hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_rignot].values
 
 ########################################
 # Medley (Zwally and Rignot, daily, uncertainty)
@@ -71,17 +71,17 @@ smb_uncert_hansen_ais_rignot = hansen['Rate of Mass Change Uncertainty (Gt/month
 medley = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/smb_datasets/Medley_surface-mass-balance_62856337e41344.81177704/mass-balance-data/Medley_AIS_SMB_IMBIE3.csv',
                      float_precision = 'round_trip')
 
-# find indices of AIS smb (Zwally region)
+# find indices of smb (Zwally region)
 medley_idx_zwally = np.where((medley['Drainage_Region_Set'] == 'Zwally') & (medley['Drainage_Region_ID'] == 'AIS'))
 # daily time resolution??
 time_medley = medley['Date'].iloc[medley_idx_zwally].values
-smb_medley_ais_zwally = medley['Surface_Mass_Balance'].iloc[medley_idx_zwally].values
-smb_uncert_medley_ais_zwally = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_zwally].values
+smb_medley_zwally = medley['Surface_Mass_Balance'].iloc[medley_idx_zwally].values
+smb_uncert_medley_zwally = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_zwally].values
 
-# find indices of AIS smb (Rignot region)
+# find indices of smb (Rignot region)
 medley_idx_rignot = np.where((medley['Drainage_Region_Set'] == 'Rignot') & (medley['Drainage_Region_ID'] == 'AIS'))
-smb_medley_ais_rignot = medley['Surface_Mass_Balance'].iloc[medley_idx_rignot].values
-smb_uncert_medley_ais_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_rignot].values
+smb_medley_rignot = medley['Surface_Mass_Balance'].iloc[medley_idx_rignot].values
+smb_uncert_medley_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_rignot].values
 
 """
 ########################################
@@ -90,19 +90,19 @@ smb_uncert_medley_ais_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[m
 niwano = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/smb_datasets/Niwano_surface-mass-balance_62578ab94d14f6.50682970/mass-balance-data/NHM-SMAP_v1.0_1979-2021_rate-of-mass-change_IMBIE3_AIS.csv',
                      float_precision = 'round_trip')
 
-# find indices of AIS smb (Zwally region)
+# find indices of smb (Zwally region)
 niwano_idx_zwally = np.where((niwano['Drainage-Region-Set'] == 'Zwally') & (niwano['Drainage-Region-ID'] == 'AIS'))
 # annual time resolution
 time_niwano_start = niwano['Start-Date-(decimal-years)'].iloc[niwano_idx_zwally].values
 time_niwano_end = niwano['End-Date-(decimal-years)'].iloc[niwano_idx_zwally].values
 
-smb_niwano_ais_zwally = niwano['Rate-of-Mass-Change-(Gt/yr)'].iloc[niwano_idx_zwally].values
-smb_uncert_niwano_ais_zwally = niwano['Rate-of-Mass-Change-Uncertainty-(Gt/yr)'].iloc[niwano_idx_zwally].values
+smb_niwano_zwally = niwano['Rate-of-Mass-Change-(Gt/yr)'].iloc[niwano_idx_zwally].values
+smb_uncert_niwano_zwally = niwano['Rate-of-Mass-Change-Uncertainty-(Gt/yr)'].iloc[niwano_idx_zwally].values
 
-# find indices of AIS smb (Rignot region)
+# find indices of smb (Rignot region)
 niwano_idx_rignot = np.where((niwano['Drainage-Region-Set'] == 'Rignot') & (niwano['Drainage-Region-ID'] == ' AIS'))
-smb_niwano_ais_rignot = niwano['Rate-of-Mass-Change-(Gt/yr)'].iloc[niwano_idx_rignot].values
-smb_uncert_niwano_ais_rignot = niwano['Rate-of-Mass-Change-Uncertainty-(Gt/yr)'].iloc[niwano_idx_rignot].values
+smb_niwano_rignot = niwano['Rate-of-Mass-Change-(Gt/yr)'].iloc[niwano_idx_rignot].values
+smb_uncert_niwano_rignot = niwano['Rate-of-Mass-Change-Uncertainty-(Gt/yr)'].iloc[niwano_idx_rignot].values
 """
 
 ########################################
@@ -114,9 +114,9 @@ vwessem = pd.DataFrame(np.array([np.arange(1979,2022,1/12), ds.smb[:,-1]]).T,
 del ds
 # monthly time resolution
 time_vwessem = vwessem['Time'].values
-smb_vwessem_ais = vwessem['Surface Mass Change'].values
+smb_vwessem = vwessem['Surface Mass Change'].values
 # use racmo 20% uncertainty
-smb_uncert_vwessem_ais = 0.2 * smb_vwessem_ais
+smb_uncert_vwessem = 0.2 * smb_vwessem
 
 """
 
@@ -144,7 +144,7 @@ wever_idx_zwally_ap = np.where((wever['Drainage Region Set (Rignot/Zwally)'] == 
 smb_wever_ap_zwally = wever['Relative Mass Change (Gt)'].iloc[wever_idx_zwally_ap].values
 
 # sum
-smb_wever_ais_zwally = smb_wever_wais_zwally + smb_wever_eais_zwally + smb_wever_ap_zwally
+smb_wever_zwally = smb_wever_wais_zwally + smb_wever_eais_zwally + smb_wever_ap_zwally
 
 # Rignot
 # find indices of WAIS smb (Rignot region)
@@ -162,7 +162,7 @@ wever_idx_rignot_ap = np.where((wever['Drainage Region Set (Rignot/Zwally)'] == 
 smb_wever_ap_rignot = wever['Relative Mass Change (Gt)'].iloc[wever_idx_rignot_ap].values
 
 # sum
-smb_wever_ais_rignot = smb_wever_wais_rignot + smb_wever_eais_rignot + smb_wever_ap_rignot
+smb_wever_rignot = smb_wever_wais_rignot + smb_wever_eais_rignot + smb_wever_ap_rignot
 """
 
 # =============================================================================
@@ -195,10 +195,10 @@ datetime_medley = decimal_year_to_datetime(time_medley)
 
 # resample to monthly
 datetime_medley_df = pd.DataFrame({'Datetime':datetime_medley,
-                                   'SMB Zwally':smb_medley_ais_zwally,
-                                   'SMB Uncertainty Zwally':smb_uncert_medley_ais_zwally,
-                                   'SMB Rignot':smb_medley_ais_rignot,
-                                   'SMB Uncertainty Rignot':smb_uncert_medley_ais_rignot})   
+                                   'SMB Zwally':smb_medley_zwally,
+                                   'SMB Uncertainty Zwally':smb_uncert_medley_zwally,
+                                   'SMB Rignot':smb_medley_rignot,
+                                   'SMB Uncertainty Rignot':smb_uncert_medley_rignot})   
 
 datetime_medley_df.set_index('Datetime',
                              inplace = True)
@@ -207,10 +207,10 @@ medley_monthly = datetime_medley_df.resample('M').sum()
 
 # create new numpy arrays
 time_medley = np.array(medley_monthly.index.year + (medley_monthly.index.dayofyear-1) / 365, dtype = float)
-smb_medley_ais_zwally = medley_monthly['SMB Zwally'].values
-smb_uncert_medley_ais_zwally = medley_monthly['SMB Uncertainty Zwally'].values
-smb_medley_ais_rignot = medley_monthly['SMB Rignot'].values
-smb_uncert_medley_ais_rignot = medley_monthly['SMB Uncertainty Rignot'].values
+smb_medley_zwally = medley_monthly['SMB Zwally'].values
+smb_uncert_medley_zwally = medley_monthly['SMB Uncertainty Zwally'].values
+smb_medley_rignot = medley_monthly['SMB Rignot'].values
+smb_uncert_medley_rignot = medley_monthly['SMB Uncertainty Rignot'].values
 
 """
 ########################################
@@ -222,10 +222,10 @@ datetime_niwano_end = decimal_year_to_datetime(time_niwano_end)
 # resample to monthly
 datetime_niwano_df = pd.DataFrame({'Datetime Start':datetime_niwano_start,
                                    'Datetime End':datetime_niwano_end,
-                                   'SMB Zwally':smb_niwano_ais_zwally,
-                                   'SMB Uncertainty Zwally':smb_uncert_niwano_ais_zwally,
-                                   'SMB Rignot':smb_niwano_ais_rignot,
-                                   'SMB Uncertainty Rignot':smb_uncert_niwano_ais_rignot})   
+                                   'SMB Zwally':smb_niwano_zwally,
+                                   'SMB Uncertainty Zwally':smb_uncert_niwano_zwally,
+                                   'SMB Rignot':smb_niwano_rignot,
+                                   'SMB Uncertainty Rignot':smb_uncert_niwano_rignot})   
 
 datetime_niwano_df['Date'] = datetime_niwano_df.apply(lambda x: pd.date_range(x['Datetime Start'], x['Datetime End'], freq = 'M'), 
                                                       axis=1)
@@ -236,10 +236,10 @@ niwano_monthly.set_index('Date',
                          inplace = True)
 # create new numpy arrays
 time_niwano = np.array(niwano_monthly.index.year + (niwano_monthly.index.dayofyear-1) / 365, dtype = float)
-smb_niwano_ais_zwally = niwano_monthly['SMB Zwally'].values / 12
-smb_uncert_niwano_ais_zwally = niwano_monthly['SMB Uncertainty Zwally'].values / 12
-smb_niwano_ais_rignot = niwano_monthly['SMB Rignot'].values / 12
-smb_uncert_niwano_ais_rignot = niwano_monthly['SMB Uncertainty Rignot'].values / 12
+smb_niwano_zwally = niwano_monthly['SMB Zwally'].values / 12
+smb_uncert_niwano_zwally = niwano_monthly['SMB Uncertainty Zwally'].values / 12
+smb_niwano_rignot = niwano_monthly['SMB Rignot'].values / 12
+smb_uncert_niwano_rignot = niwano_monthly['SMB Uncertainty Rignot'].values / 12
 """
 """
 ########################################
@@ -249,8 +249,8 @@ datetime_wever = decimal_year_to_datetime(time_wever)
 
 # resample to monthly
 datetime_wever_df = pd.DataFrame({'Datetime':datetime_wever,
-                                   'SMB Zwally':smb_wever_ais_zwally,                               
-                                   'SMB Rignot':smb_wever_ais_rignot})   
+                                   'SMB Zwally':smb_wever_zwally,                               
+                                   'SMB Rignot':smb_wever_rignot})   
 
 datetime_wever_df.set_index('Datetime',
                              inplace = True)
@@ -259,8 +259,8 @@ wever_monthly = datetime_wever_df.resample('M').sum()
 
 # create new numpy arrays
 time_wever = np.array(wever_monthly.index.year + (wever_monthly.index.dayofyear-1) / 365, dtype = float)
-smb_wever_ais_zwally = wever_monthly['SMB Zwally'].values
-smb_wever_ais_rignot = wever_monthly['SMB Rignot'].values
+smb_wever_zwally = wever_monthly['SMB Zwally'].values
+smb_wever_rignot = wever_monthly['SMB Rignot'].values
 """
 # =============================================================================
 # 3. Interpolate to common monthly time vector
@@ -268,19 +268,19 @@ smb_wever_ais_rignot = wever_monthly['SMB Rignot'].values
 time_combined = np.arange(1979,2022+(1/12),1/12)
 
 # create list
-smb_list = [smb_amory_ais_zwally,
-            smb_hansen_ais_zwally,
-            smb_hansen_ais_rignot,
-            smb_medley_ais_zwally,
-            smb_medley_ais_rignot,
-            smb_vwessem_ais]
+smb_list = [smb_amory_zwally,
+            smb_hansen_zwally,
+            smb_hansen_rignot,
+            smb_medley_zwally,
+            smb_medley_rignot,
+            smb_vwessem]
 
-smb_uncert_list = [smb_uncert_amory_ais_zwally,
-                   smb_uncert_hansen_ais_zwally,
-                   smb_uncert_hansen_ais_rignot,
-                   smb_uncert_medley_ais_zwally,
-                   smb_uncert_medley_ais_rignot,
-                   smb_uncert_vwessem_ais]
+smb_uncert_list = [smb_uncert_amory_zwally,
+                   smb_uncert_hansen_zwally,
+                   smb_uncert_hansen_rignot,
+                   smb_uncert_medley_zwally,
+                   smb_uncert_medley_rignot,
+                   smb_uncert_vwessem]
 
 time_list = [time_amory,
              time_hansen,
@@ -354,7 +354,7 @@ def average_arrays(array_list):
     array_average = np.nanmean(stacked_arrays, axis = 0)
     return array_average
 
-smb_combined_ais = average_arrays(smb_interp_list)
+smb_combined = average_arrays(smb_interp_list)
 
 # combine uncertainties as root mean square
 
@@ -366,10 +366,10 @@ def combine_smb_uncertainties(array_list):
     array_rms = np.sqrt(np.nanmean(stacked_arrays ** 2, axis = 0))
     return array_rms / np.sqrt(num_finite)
 
-smb_uncert_combined_ais = combine_smb_uncertainties(smb_uncert_interp_list)
+smb_uncert_combined = combine_smb_uncertainties(smb_uncert_interp_list)
 
 # add to plot
-ax1.plot(time_combined, smb_combined_ais,
+ax1.plot(time_combined, smb_combined,
          color = 'k',
          linewidth = lw/2,
          label = 'Combined SMB')
@@ -392,12 +392,12 @@ gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 
 ax1 = fig.add_subplot(gs[0])
 
-ax1.fill_between(time_combined, smb_combined_ais - smb_uncert_combined_ais, smb_combined_ais + smb_uncert_combined_ais,
+ax1.fill_between(time_combined, smb_combined - smb_uncert_combined, smb_combined + smb_uncert_combined,
                  color = 'k',
                  alpha = 0.25,
                  edgecolor = 'none')
 
-ax1.plot(time_combined, smb_combined_ais,
+ax1.plot(time_combined, smb_combined,
          color = 'k',
          label = 'Combined SMB')
 
@@ -418,22 +418,16 @@ plt.close(fig)
 # set reference period
 t1_ref, t2_ref = 1979, 2010
 
-smb_ref = smb_combined_ais[(time_combined >= t1_ref) & (time_combined < t2_ref)].mean()
+smb_ref = smb_combined[(time_combined >= t1_ref) & (time_combined < t2_ref)].mean()
 
 # calculate anomaly
-smb_combined_anom_ais = smb_combined_ais - smb_ref
+smb_combined_anom = smb_combined - smb_ref
 
 # accumulate anomaly
-smb_combined_cumul_anom_ais = smb_combined_anom_ais.cumsum()
-
-# accumulate anomaly uncertainty through time (root sum square)
-
-smb_combined_cumul_anom_uncert_ais = np.zeros_like(smb_combined_cumul_anom_ais)
-for i, x in enumerate(smb_uncert_combined_ais):
-    smb_combined_cumul_anom_uncert_ais[i] = np.sqrt(np.sum(smb_uncert_combined_ais[0:i] ** 2))
+smb_combined_cumul_anom = smb_combined_anom.cumsum()
     
 # smooth
-smb_combined_cumul_anom_ais_smoothed = pd.DataFrame(smb_combined_cumul_anom_ais).rolling(window = 36, min_periods = 1, center = True).mean().values.flatten()
+smb_combined_cumul_anom_smoothed = pd.DataFrame(smb_combined_cumul_anom).rolling(window = 36, min_periods = 1, center = True).mean().values.flatten()
 
 # plot cumulative SMB
 fig = plt.figure(figsize = (7,3),constrained_layout=True)
@@ -441,17 +435,13 @@ gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 
 ax1 = fig.add_subplot(gs[0])
 
-ax1.fill_between(time_combined, smb_combined_cumul_anom_ais_smoothed - smb_combined_cumul_anom_uncert_ais, smb_combined_cumul_anom_ais_smoothed + smb_combined_cumul_anom_uncert_ais,
-                 color = cmap(0),
-                 alpha = 0.25,
-                 edgecolor = 'none')
 
-ax1.plot(time_combined, smb_combined_cumul_anom_ais,
+ax1.plot(time_combined, smb_combined_cumul_anom,
          color = cmap(4),
          alpha = 0.5,
          label = 'Monthly')
 
-ax1.plot(time_combined, smb_combined_cumul_anom_ais_smoothed,
+ax1.plot(time_combined, smb_combined_cumul_anom_smoothed,
          color = cmap(0),
          label = '36 month smoothed')
 
@@ -473,68 +463,100 @@ plt.close(fig)
 # load IMBIE data
 imbie = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/imbie_datasets/imbie_antarctica_2021_Gt.csv')
 time_imbie = imbie['Year'].values
-dm_imbie = imbie['Cumulative mass balance (Gt)'].values
-dm_imbie = dm_imbie - dm_imbie[0]
+dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 
-dm_uncert_imbie = imbie['Cumulative mass balance uncertainty (Gt)'].values
+dmdt_uncert_imbie = imbie['Mass balance uncertainty (Gt/yr)'].values
+
+# convert SMB anomaly to dM/dt
+dmdt_smb_imbie, num_points = dm_to_dmdt(time_combined, smb_combined_cumul_anom_smoothed, 36)
+# need to convert from Gt / month to Gt / yr
+dmdt_smb_uncert_imbie = smb_uncert_combined * 12 
+
+# function to find index of nearest input value in a given vector
+def dsearchn(x, v):
+    return int(np.where(np.abs(x - v) == np.abs(x - v).min())[0])
+
+t1 = dsearchn(np.floor(time_imbie[0]), time_combined)
+t2 = dsearchn(np.ceil(time_imbie[-1]), time_combined)
 
 # partition as dynamics = dm - SMB
-# interpolate combined SMB to imbie time period
-smb_imbie = np.interp(time_imbie,
-                      time_combined,
-                      smb_combined_cumul_anom_ais_smoothed)
+dmdt_dyn_imbie = dmdt_imbie - dmdt_smb_imbie[t1:t2]
+# combine uncertainties
+dmdt_dyn_uncert_imbie = np.sqrt(dmdt_uncert_imbie ** 2 + dmdt_smb_uncert_imbie[t1:t2] ** 2)
 
-smb_imbie = smb_imbie - smb_imbie[0]
+# integrate for cumulative mass change
+dm_imbie = imbie['Cumulative mass balance (Gt)'].values
+dm_uncert_imbie = imbie['Cumulative mass balance uncertainty (Gt)'].values
 
-smb_uncert_imbie_tmp =  np.interp(time_imbie,
-                              time_combined,
-                              smb_uncert_combined_ais)
-
-# accumulate
-smb_uncert_imbie = np.zeros_like(smb_imbie)
-for i, x in enumerate(smb_uncert_imbie_tmp):
-    smb_uncert_imbie[i] = np.sqrt(np.sum(smb_uncert_imbie_tmp[0:i] ** 2))
+dm_smb_imbie = dmdt_smb_imbie.cumsum() / 12
+# accumulate anomaly uncertainty through time (root sum square)
+dm_smb_uncert_imbie = np.zeros_like(dm_smb_imbie)
+for i, x in enumerate(dm_smb_uncert_imbie):
+    if i == 0:
+        dm_smb_uncert_imbie[i] = np.sqrt(np.sum(dmdt_smb_uncert_imbie[i] ** 2)) / np.sqrt(12)
+    else:
+        dm_smb_uncert_imbie[i] = np.sqrt(np.sum(dmdt_smb_uncert_imbie[0:i] ** 2)) / np.sqrt(12)
     
-del smb_uncert_imbie_tmp
+dm_dyn_imbie = dmdt_dyn_imbie.cumsum() / 12
+dm_dyn_uncert_imbie = np.zeros_like(dm_dyn_imbie)
+for i, x in enumerate(dm_dyn_uncert_imbie):
+    if i == 0:
+        dm_dyn_uncert_imbie[i] = np.sqrt(np.sum(dmdt_dyn_uncert_imbie[0] ** 2)) / np.sqrt(12)
+    else:
+        dm_dyn_uncert_imbie[i] = np.sqrt(np.sum(dmdt_dyn_uncert_imbie[0:i] ** 2)) / np.sqrt(12)
+    
 
-# remove smb
-dyn_imbie = dm_imbie - smb_imbie
-dyn_uncert_imbie = np.sqrt(dm_uncert_imbie ** 2 + smb_uncert_imbie ** 2)
+# =============================================================================
+# 8. plot partitioned mass balance
+# =============================================================================
+# function to offset time series
+def time_series_offset(v, offset):
+    return v - (v[0] - offset)
 
-# plot partitioned mass balance
+offset = dm_smb_imbie[t1]
+
+cmap = plt.cm.get_cmap('PuBuGn', 5)
+a = 0.25
+
 fig = plt.figure(figsize = (7,3),constrained_layout=True)
 gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
 
 ax1 = fig.add_subplot(gs[0])
 
 # smb
-ax1.fill_between(time_imbie, smb_imbie - smb_uncert_imbie, smb_imbie + smb_uncert_imbie,
-                 color = cmap(2),
-                 alpha = 0.5,
+ax1.fill_between(time_combined, 
+                 dm_smb_imbie - dm_smb_uncert_imbie, 
+                 dm_smb_imbie + dm_smb_uncert_imbie,
+                 color = cmap(1),
+                 alpha = a,
                  edgecolor = 'none')
 
-ax1.plot(time_imbie, smb_imbie,
-         color = cmap(2),
+ax1.plot(time_combined, dm_smb_imbie,
+         color = cmap(1),
          label = 'Surface')
 
 # dynamics
-ax1.fill_between(time_imbie, dyn_imbie - dyn_uncert_imbie, dyn_imbie + dyn_uncert_imbie,
-                 color = cmap(0),
-                 alpha = 0.5,
+ax1.fill_between(time_imbie, 
+                 time_series_offset(dm_dyn_imbie, offset) - dm_dyn_uncert_imbie, 
+                 time_series_offset(dm_dyn_imbie, offset) + dm_dyn_uncert_imbie,
+                 color = cmap(2),
+                 alpha = a,
                  edgecolor = 'none')
 
-ax1.plot(time_imbie, dyn_imbie,
-         color = cmap(0),
+ax1.plot(time_imbie, time_series_offset(dm_dyn_imbie, offset),
+         color = cmap(2),
          label = 'Dynamics')
 
 # total
-ax1.fill_between(time_imbie, dm_imbie - dm_uncert_imbie, dm_imbie + dm_uncert_imbie,
-                 color = cmap(1),
-                 alpha = 0.5,
+ax1.fill_between(time_imbie, 
+                 time_series_offset(dm_imbie, offset) - dm_uncert_imbie, 
+                 time_series_offset(dm_imbie, offset) + dm_uncert_imbie,
+                 color = cmap(3),
+                 alpha = a,
                  edgecolor = 'none')
 
-ax1.plot(time_imbie, dm_imbie,
-         color = cmap(1),
+ax1.plot(time_imbie, time_series_offset(dm_imbie, offset),
+         color = cmap(3),
          label = 'Total')
 
 plt.xlabel('Year')
@@ -543,6 +565,9 @@ plt.ylabel('Mass change [Gt]')
 plt.legend(loc = 'center left',
            bbox_to_anchor=(1, 0.5))
 
+plt.xlim(1979, 2021)
+plt.ylim(-5000, 1000)
+
 plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/imbie_partitioned_ais.svg', format = 'svg', dpi = 600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -550,6 +575,34 @@ plt.close(fig)
 # =============================================================================
 # 8. Save IMBIE outputs
 # =============================================================================
-# convert anomaly to dM/dt
 
-smb_combined_cumul_anom_ais_smoothed_dmdt, num_points = dm_to_dmdt(time_combined, smb_combined_cumul_anom_ais_smoothed, 36)
+# create dataframe
+df_smb = pd.DataFrame({'Year':time_combined[0:t2],
+                       'Surface mass balance anomaly (Gt/yr)':dmdt_smb_imbie[0:t2],
+                       'Surface mass balance anomaly uncertainty (Gt/yr)':dmdt_smb_uncert_imbie[0:t2],
+                       'Cumulative surface mass balance anomaly (Gt)':dm_smb_imbie[0:t2],
+                       'Cumulative surface mass balance anomaly uncertainty (Gt)':dm_smb_uncert_imbie[0:t2]})
+
+df_dm = pd.DataFrame({'Mass balance (Gt/yr)':dmdt_imbie,
+                      'Mass balance uncertainty (Gt/yr)':dmdt_uncert_imbie,
+                      'Cumulative mass balance (Gt)':dm_imbie,
+                      'Cumulative mass balance uncertainty (Gt)':dm_uncert_imbie})
+# set index for merging
+df_dm = df_dm.set_index(np.arange(t1, t2, 1))
+
+df_dyn = pd.DataFrame({'Dynamics mass balance anomaly (Gt/yr)':dmdt_dyn_imbie,
+                       'Dynamics mass balance anomaly uncertainty (Gt/yr)':dmdt_dyn_uncert_imbie,
+                       'Cumulative dynamics mass balance anomaly (Gt)':dm_dyn_imbie,
+                       'Cumulative dynamics mass balance anomaly uncertainty (Gt)':dm_dyn_uncert_imbie})
+df_dyn = df_dyn.set_index(np.arange(t1, t2, 1))
+
+# merge dataframes
+df_out = pd.merge_asof(df_smb, pd.concat([df_dyn, df_dm], axis = 1),
+                      left_index = True,
+                      right_index = True)
+# remove nans from merging
+df_out = df_out.replace({np.nan: None})
+
+# save
+df_out.to_csv('/Users/thomas/Documents/github/imbie_partitioning/partitioned_data/imbie_antarctica_2021_Gt_partitioned.csv',
+              index = False)
