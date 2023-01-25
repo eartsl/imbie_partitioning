@@ -209,7 +209,7 @@ ax1.set_ylim(-250, 150)
 plt.legend(loc = 'center left',
            bbox_to_anchor=(1, 0.5))
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_gris_datasets.svg', format = 'svg', dpi = 600, bbox_inches='tight')
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_datasets_gris.svg', format = 'svg', dpi = 600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
 
