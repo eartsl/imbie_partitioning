@@ -330,8 +330,8 @@ lw = 1
 labels = ['Amory Zwally (MAR 3.12.1)',
           'Hansen Rignot (HIRHAM5)',
           'Hansen Zwally (HIRHAM5)',
-          'Medley Rignot (MERRA-2)',
-          'Medley Zwally (MERRA-2)',
+          'Medley Rignot (GSFC-FDMv1.2.1)',
+          'Medley Zwally (GSFC-FDMv1.2.1)',
           'Van Wessem (RACMO 2.3p2)']
 
 cmap_ints = [0, 2, 3, 4, 5, 6]
@@ -426,9 +426,6 @@ smb_combined_anom = smb_combined - smb_ref
 # accumulate anomaly
 smb_combined_cumul_anom = smb_combined_anom.cumsum()
     
-# smooth
-smb_combined_cumul_anom_smoothed = pd.DataFrame(smb_combined_cumul_anom).rolling(window = 36, min_periods = 1, center = True).mean().values.flatten()
-
 # plot cumulative SMB
 fig = plt.figure(figsize = (7,3),constrained_layout=True)
 gs = plt.GridSpec(1, 1, figure=fig, wspace = 0.1)
@@ -437,21 +434,12 @@ ax1 = fig.add_subplot(gs[0])
 
 
 ax1.plot(time_combined, smb_combined_cumul_anom,
-         color = cmap(4),
-         alpha = 0.5,
-         label = 'Monthly')
-
-ax1.plot(time_combined, smb_combined_cumul_anom_smoothed,
-         color = cmap(0),
-         label = '36 month smoothed')
+         color = cmap(4))
 
 ax1.set_ylim(-1000, 1000)
 
 plt.xlabel('Year')
 plt.ylabel('Cumulative SMB Anomaly [Gt] \n' + '(w.r.t ' + str(t1_ref) + '-' + str(t2_ref) +')')
-
-plt.legend(loc = 'center left',
-           bbox_to_anchor=(1, 0.5))
 
 plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_ais.svg', format = 'svg', dpi = 600, bbox_inches='tight')
 fig.clf()
@@ -468,7 +456,7 @@ dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 dmdt_uncert_imbie = imbie['Mass balance uncertainty (Gt/yr)'].values
 
 # convert SMB anomaly to dM/dt
-dmdt_smb_imbie, num_points = dm_to_dmdt(time_combined, smb_combined_cumul_anom_smoothed, 36)
+dmdt_smb_imbie, num_points = dm_to_dmdt(time_combined, smb_combined_cumul_anom, 36)
 # need to convert from Gt / month to Gt / yr
 dmdt_smb_uncert_imbie = smb_uncert_combined * 12 
 
