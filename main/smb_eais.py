@@ -29,35 +29,36 @@ os.chdir('/Users/thomas/Documents/github/imbie_partitioning/main')
 # =============================================================================
 # 1. load SMB datasets
 # =============================================================================
-
-# =============================================================================
-# Fettweis (Zwally and Rignot, monthly uncertainty )
-# =============================================================================
-# Zwally
-fettweis_zwally = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/Fettweis_surface-mass-balance_626693c921c693.14470954/mass-balance-data/fettweis_GrIS/fettweis_GrIS_Zwally.dat',
-                              float_precision='round_trip')
+########################################
+# Amory (Zwally only, monthly, uncertainty)
+########################################
+amory = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/Amory_surface-mass-balance_62b1b713be3696.98550746/mass-balance-data/kittel_amory_agosta_AIS_Zwally.dat',
+                    float_precision='round_trip')
 
 # find indices of smb (Zwally region)
-fettweis_idx_zwally = np.where(fettweis_zwally['Drainage Region ID'] == 9.9)[0]
+# EAIS Zwally IDs = 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+amory_eais_idx = [' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8',
+                  ' 9', '10', '11', '12', '13', '14', '15', '16', '17']
 
-time_fettweis = fettweis_zwally['Date (decimal years)'].iloc[fettweis_idx_zwally].values
-smb_fettweis_zwally = fettweis_zwally['Relative Mass Change (Gt)'].iloc[
-    fettweis_idx_zwally].values
-smb_uncert_fettweis_zwally = fettweis_zwally[
-    'Relative Mass Change Uncertainty (Gt)'].iloc[fettweis_idx_zwally].values
+# monthly time resolution
+time_amory = amory['Date (decimal years)'].iloc[np.where(
+    amory['Drainage Region ID'] == amory_eais_idx[0])].values
 
-# Rignot
-fettweis_rignot = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/Fettweis_surface-mass-balance_626693c921c693.14470954/mass-balance-data/fettweis_GrIS/fettweis_GrIS_Rignot2016.dat',
-                              float_precision='round_trip')
+smb_amory_zwally_list = []
+smb_uncert_amory_zwally_list = []
 
-# find indices of smb (Rignot region)
-fettweis_idx_rignot = np.where(fettweis_rignot['Drainage Region ID'] == 99)[0]
+# get smb and uncertainty in ice sheet basins
+for i, basin in enumerate(amory_eais_idx):
+    amory_idx_zwally = np.where(amory['Drainage Region ID'] == basin)
+    smb_amory_zwally_list.append(
+        amory['Relative Mass Change (Gt)'].iloc[amory_idx_zwally].values)
+    smb_uncert_amory_zwally_list.append(
+        amory['Relative Mass Change Uncertainty (Gt)'].iloc[amory_idx_zwally].values)
 
-time_fettweis = fettweis_rignot['Date (decimal years)'].iloc[fettweis_idx_rignot].values
-smb_fettweis_rignot = fettweis_rignot['Relative Mass Change (Gt)'].iloc[
-    fettweis_idx_rignot].values
-smb_uncert_fettweis_rignot = fettweis_rignot[
-    'Relative Mass Change Uncertainty (Gt)'].iloc[fettweis_idx_rignot].values
+# sum and combine uncertainties
+smb_amory_zwally = [sum(x) for x in zip(*smb_amory_zwally_list)]
+smb_uncert_amory_zwally = [np.sqrt(sum(x ** 2 for x in row))
+                           for row in zip(*smb_uncert_amory_zwally_list)]
 
 ########################################
 # Hansen (Zwally and Rignot, monthly, uncertainty)
@@ -66,59 +67,163 @@ hansen = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_
                      float_precision='round_trip')
 
 # find indices of smb (Zwally region)
-hansen_idx_zwally = np.where((hansen['Drainage Region Set'] == 'Zwally') & (
-    hansen['Drainage Region ID'] == 'GRIS'))
+hansen_eais_idx_zwally = ['2.000', '3.000', '4.000', '5.000', '6.000', '7.000', '8.000', '9.000',
+                          '10.000', '11.000', '12.000', '13.000', '14.000', '15.000', '16.000', '17.000']
+
 # monthly time resolution
-time_hansen = hansen['Date (decimal years)'].iloc[hansen_idx_zwally].values
-smb_hansen_zwally = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_zwally].values
-smb_uncert_hansen_zwally = hansen[
-    'Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_zwally].values
+time_hansen = hansen['Date (decimal years)'].iloc[np.where(
+    hansen['Drainage Region ID'] == hansen_eais_idx_zwally[0])].values
+
+smb_hansen_zwally_list = []
+smb_uncert_hansen_zwally_list = []
+
+# get smb and uncertainty in ice sheet basins
+for i, basin in enumerate(hansen_eais_idx_zwally):
+    hansen_idx_zwally = np.where(hansen['Drainage Region ID'] == basin)
+    smb_hansen_zwally_list.append(
+        hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_zwally].values)
+    smb_uncert_hansen_zwally_list.append(
+        hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_zwally].values)
+
+# sum and combine uncertainties
+smb_hansen_zwally = [sum(x) for x in zip(*smb_hansen_zwally_list)]
+smb_uncert_hansen_zwally = [np.sqrt(
+    sum(x ** 2 for x in row)) for row in zip(*smb_uncert_hansen_zwally_list)]
 
 # find indices of smb (Rignot region)
-hansen_idx_rignot = np.where((hansen['Drainage Region Set'] == 'Rignot') & (
-    hansen['Drainage Region ID'] == 'GRIS'))
-smb_hansen_rignot = hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_rignot].values
-smb_uncert_hansen_rignot = hansen[
-    'Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_rignot].values
+hansen_eais_idx_rignot = ['A-Ap', 'Ap-B', 'B-C', 'C-Cp',
+                          'Cp-D', 'D-Dp', 'Dp-E', 'E-Ep', 'Jpp-K', 'K-A']
 
-# =============================================================================
-# Noel
-# =============================================================================
-noel = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/Noel_aggregated_smb/ERA5-3H_RACMO2.3p2_GrIS1_IMBIE2.csv',
-                   float_precision='round_trip')
+smb_hansen_rignot_list = []
+smb_uncert_hansen_rignot_list = []
+
+# get smb and uncertainty in ice sheet basins
+for i, basin in enumerate(hansen_eais_idx_rignot):
+    hansen_idx_rignot = np.where(hansen['Drainage Region ID'] == basin)
+    smb_hansen_rignot_list.append(
+        hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_rignot].values)
+    smb_uncert_hansen_rignot_list.append(
+        hansen['Rate of Mass Change Uncertainty (Gt/month)'].iloc[hansen_idx_rignot].values)
+
+# sum and combine uncertainties
+smb_hansen_rignot = [sum(x) for x in zip(*smb_hansen_rignot_list)]
+smb_uncert_hansen_rignot = [np.sqrt(
+    sum(x ** 2 for x in row)) for row in zip(*smb_uncert_hansen_rignot_list)]
+
+########################################
+# Medley (Zwally and Rignot, daily, uncertainty)
+########################################
+medley = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/Medley_surface-mass-balance_62856337e41344.81177704/mass-balance-data/Medley_AIS_SMB_IMBIE3.csv',
+                     float_precision='round_trip')
+
+# find indices of smb (Zwally region)
+medley_idx_zwally = np.where((medley['Drainage_Region_Set'] == 'Zwally') & (
+    medley['Drainage_Region_ID'] == 'EAIS'))
+# daily time resolution??
+time_medley = medley['Date'].iloc[medley_idx_zwally].values
+smb_medley_zwally = medley['Surface_Mass_Balance'].iloc[medley_idx_zwally].values
+smb_uncert_medley_zwally = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_zwally].values
+
+# find indices of smb (Rignot region)
+medley_idx_rignot = np.where((medley['Drainage_Region_Set'] == 'Rignot') & (
+    medley['Drainage_Region_ID'] == 'EAIS'))
+smb_medley_rignot = medley['Surface_Mass_Balance'].iloc[medley_idx_rignot].values
+smb_uncert_medley_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_rignot].values
+
+########################################
+# van Wessem (Racmo ice mask, monthly, uncertainty)
+########################################
+
+# EAIS Rignot basin numbers = 3,4,9,12,13,14,15,16,17,18
+vwessem_eais_idx = np.array([3, 4, 9, 12, 13, 14, 15, 16, 17, 18]) - 1
+ds = xr.open_dataset(
+    '/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/van Wessem_surface-mass-balance_6262601bae86e4.66224488/mass-balance-data/ERA5-3H_RACMO2.3p2_ANT27_IMBIE2.nc')
+vwessem = pd.DataFrame(np.array([np.arange(1979, 2022, 1/12), ds.smb[:, vwessem_eais_idx].sum(axis=1)]).T,
+                       columns=['Time', 'Surface Mass Change'])
+del ds
 # monthly time resolution
-time_noel = noel['Date (Decimal Years)'].values
-smb_noel = noel['Surface Mass Change (Gt)'].values
+time_vwessem = vwessem['Time'].values
+smb_vwessem = vwessem['Surface Mass Change'].values
 # use racmo 20% uncertainty
-smb_uncert_noel = 0.2 * smb_noel
+smb_uncert_vwessem = 0.2 * smb_vwessem
 
 # =============================================================================
 # 2. convert to monthly temporal resolution where needed
 # =============================================================================
+########################################
+# Medley
+########################################
+# convert to datetime
+
+
+def decimal_year_to_datetime(decimal_number_array):
+    datetimes_array = []
+    for epoch in decimal_number_array:
+        # convert text to number
+        date_decimal = float(epoch)
+        # year is the integer part of the input
+        date_year = int(date_decimal)
+        # number of days is part of the year, which is left after we subtract year
+        year_fraction = date_decimal - date_year
+        # a little oversimplified here with int and assuming all years have 365 days
+        days = int(year_fraction * 365)
+        if days == 0:
+            days = days + 1
+        # now convert the year and days into string and then into date (there is probably a better way to do this - without the string step)
+        date = datetime.strptime("{}-{}".format(date_year, days), "%Y-%j")
+        # see https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior for format explanation
+        datetimes_array.append(date)
+    return datetimes_array
+
+
+datetime_medley = decimal_year_to_datetime(time_medley)
+
+# resample to monthly
+datetime_medley_df = pd.DataFrame({'Datetime': datetime_medley,
+                                   'SMB Zwally': smb_medley_zwally,
+                                   'SMB Uncertainty Zwally': smb_uncert_medley_zwally,
+                                   'SMB Rignot': smb_medley_rignot,
+                                   'SMB Uncertainty Rignot': smb_uncert_medley_rignot})
+
+datetime_medley_df.set_index('Datetime',
+                             inplace=True)
+
+medley_monthly = datetime_medley_df.resample('M').sum()
+
+# create new numpy arrays
+time_medley = np.array(medley_monthly.index.year +
+                       (medley_monthly.index.dayofyear-1) / 365, dtype=float)
+smb_medley_zwally = medley_monthly['SMB Zwally'].values
+smb_uncert_medley_zwally = medley_monthly['SMB Uncertainty Zwally'].values
+smb_medley_rignot = medley_monthly['SMB Rignot'].values
+smb_uncert_medley_rignot = medley_monthly['SMB Uncertainty Rignot'].values
 
 # =============================================================================
 # 3. Interpolate to common monthly time vector
 # =============================================================================
-time_combined = np.arange(1950 + (1 / 12), 2022 + (1 / 12), 1 / 12)
+time_combined = np.arange(1979, 2022+(1/12), 1/12)
 
 # create list
-smb_list = [smb_fettweis_zwally,
-            smb_fettweis_rignot,
+smb_list = [smb_amory_zwally,
             smb_hansen_zwally,
             smb_hansen_rignot,
-            smb_noel]
+            smb_medley_zwally,
+            smb_medley_rignot,
+            smb_vwessem]
 
-smb_uncert_list = [smb_uncert_fettweis_zwally,
-                   smb_uncert_fettweis_rignot,
+smb_uncert_list = [smb_uncert_amory_zwally,
                    smb_uncert_hansen_zwally,
                    smb_uncert_hansen_rignot,
-                   smb_uncert_noel]
+                   smb_uncert_medley_zwally,
+                   smb_uncert_medley_rignot,
+                   smb_uncert_vwessem]
 
-time_list = [time_fettweis,
-             time_fettweis,
+time_list = [time_amory,
              time_hansen,
              time_hansen,
-             time_noel]
+             time_medley,
+             time_medley,
+             time_vwessem]
 
 # interpolate smb
 smb_interp_list = []
@@ -160,13 +265,14 @@ ax1 = fig.add_subplot(gs[0])
 line_alpha = 0.5
 lw = 1
 
-labels = ['Fettweis Zwally (MAR 3.12.1)',
-          'Fettweis Rignot (MAR 3.12.1)',
+labels = ['Amory Zwally (MAR 3.12.1)',
           'Hansen Rignot (HIRHAM5)',
           'Hansen Zwally (HIRHAM5)',
-          'Noël (RACMO 2.3p2)']
+          'Medley Rignot (GSFC-FDMv1.2.1)',
+          'Medley Zwally (GSFC-FDMv1.2.1)',
+          'Van Wessem Rignot (RACMO 2.3p2)']
 
-cmap_ints = [0, 1, 2, 3, 4]
+cmap_ints = [0, 2, 3, 4, 5, 6]
 
 ax1.axhline(y=0,
             color='k',
@@ -222,9 +328,9 @@ ax1.set_ylim(-250, 350)
 plt.legend(loc='center left',
            bbox_to_anchor=(1, 0.5))
 
-plt.title('Greenland')
+plt.title('East Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_datasets_gris.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_datasets_eais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -247,11 +353,11 @@ ax1.plot(time_combined, smb_combined,
 plt.xlabel('Year')
 plt.ylabel('Surface Mass Balance [Gt/month]')
 
-ax1.set_ylim(-250, 150)
+ax1.set_ylim(0, 350)
 
-plt.title('Greenland')
+plt.title('East Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_gris.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_eais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -261,7 +367,7 @@ plt.close(fig)
 # =============================================================================
 
 # set reference period
-t1_ref, t2_ref = 1960, 1990
+t1_ref, t2_ref = 1979, 2010
 
 smb_ref = smb_combined[(time_combined >= t1_ref) &
                        (time_combined < t2_ref)].mean()
@@ -278,6 +384,7 @@ gs = plt.GridSpec(1, 1, figure=fig, wspace=0.1)
 
 ax1 = fig.add_subplot(gs[0])
 
+
 ax1.plot(time_combined, smb_combined_cumul_anom,
          color=cmap(4))
 
@@ -287,9 +394,9 @@ plt.xlabel('Year')
 plt.ylabel('Cumulative SMB Anomaly [Gt] \n' +
            '(w.r.t ' + str(t1_ref) + '-' + str(t2_ref) + ')')
 
-plt.title('Greenland')
+plt.title('East Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_gris.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_eais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -299,7 +406,7 @@ plt.close(fig)
 # =============================================================================
 # load IMBIE data
 imbie = pd.read_csv(
-    '/Users/thomas/Documents/github/imbie_partitioning/aux/imbie_datasets/imbie_greenland_2021_Gt.csv')
+    '/Users/thomas/Documents/github/imbie_partitioning/aux/imbie_datasets/imbie_east_antarctica_2021_Gt.csv')
 time_imbie = imbie['Year'].values
 dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 
@@ -415,12 +522,12 @@ plt.ylabel('Mass change [Gt]')
 plt.legend(loc='center left',
            bbox_to_anchor=(1, 0.5))
 
-plt.xlim(1950, 2021)
+plt.xlim(1979, 2021)
 plt.ylim(-5000, 1000)
 
-plt.title('Greenland')
+plt.title('East Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/imbie_partitioned_gris.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/imbie_partitioned_eais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -457,5 +564,5 @@ df_out = pd.merge_asof(df_smb, pd.concat([df_dyn, df_dm], axis=1),
 df_out = df_out.replace({np.nan: None})
 
 # save
-df_out.to_csv('/Users/thomas/Documents/github/imbie_partitioning/partitioned_data/imbie_greenland_2021_Gt_partitioned.csv',
+df_out.to_csv('/Users/thomas/Documents/github/imbie_partitioning/partitioned_data/imbie_east_antarctica_2021_Gt_partitioned.csv',
               index=False)
