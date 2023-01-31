@@ -442,6 +442,10 @@ t1_ref, t2_ref = 1979, 2010
 smb_ref = smb_combined[(time_combined >= t1_ref) &
                        (time_combined < t2_ref)].mean()
 
+# save reference smb
+np.save('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_ref/smb_ref_ais.npy',
+        smb_ref)
+        
 # calculate anomaly
 smb_combined_anom = smb_combined - smb_ref
 
