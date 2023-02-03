@@ -36,19 +36,18 @@ amory = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_d
                     float_precision='round_trip')
 
 # find indices of smb (Zwally region)
-# EAIS Zwally IDs = 2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
-amory_eais_idx = [' 2', ' 3', ' 4', ' 5', ' 6', ' 7', ' 8',
-                  ' 9', '10', '11', '12', '13', '14', '15', '16', '17']
+# WAIS Zwally IDs = 1,18,19,20,21,22,23
+amory_wais_idx = [' 1', '18', '19', '20', '21', '22', '23']
 
 # monthly time resolution
 time_amory = amory['Date (decimal years)'].iloc[np.where(
-    amory['Drainage Region ID'] == amory_eais_idx[0])].values
+    amory['Drainage Region ID'] == amory_wais_idx[0])].values
 
 smb_amory_zwally_list = []
 smb_uncert_amory_zwally_list = []
 
 # get smb and uncertainty in ice sheet basins
-for i, basin in enumerate(amory_eais_idx):
+for i, basin in enumerate(amory_wais_idx):
     amory_idx_zwally = np.where(amory['Drainage Region ID'] == basin)
     smb_amory_zwally_list.append(
         amory['Relative Mass Change (Gt)'].iloc[amory_idx_zwally].values)
@@ -67,18 +66,18 @@ hansen = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_
                      float_precision='round_trip')
 
 # find indices of smb (Zwally region)
-hansen_eais_idx_zwally = ['2.000', '3.000', '4.000', '5.000', '6.000', '7.000', '8.000', '9.000',
-                          '10.000', '11.000', '12.000', '13.000', '14.000', '15.000', '16.000', '17.000']
+hansen_wais_idx_zwally = ['1.000', '18.000',
+                          '19.000', '20.000', '21.000', '22.000', '23.000']
 
 # monthly time resolution
 time_hansen = hansen['Date (decimal years)'].iloc[np.where(
-    hansen['Drainage Region ID'] == hansen_eais_idx_zwally[0])].values
+    hansen['Drainage Region ID'] == hansen_wais_idx_zwally[0])].values
 
 smb_hansen_zwally_list = []
 smb_uncert_hansen_zwally_list = []
 
 # get smb and uncertainty in ice sheet basins
-for i, basin in enumerate(hansen_eais_idx_zwally):
+for i, basin in enumerate(hansen_wais_idx_zwally):
     hansen_idx_zwally = np.where(hansen['Drainage Region ID'] == basin)
     smb_hansen_zwally_list.append(
         hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_zwally].values)
@@ -91,14 +90,13 @@ smb_uncert_hansen_zwally = [np.sqrt(
     sum(x ** 2 for x in row)) for row in zip(*smb_uncert_hansen_zwally_list)]
 
 # find indices of smb (Rignot region)
-hansen_eais_idx_rignot = ['A-Ap', 'Ap-B', 'B-C', 'C-Cp',
-                          'Cp-D', 'D-Dp', 'Dp-E', 'E-Ep', 'Jpp-K', 'K-A']
+hansen_wais_idx_rignot = ['J-Jpp', 'Ep-f', 'F-G', 'G-H', 'H-Hp']
 
 smb_hansen_rignot_list = []
 smb_uncert_hansen_rignot_list = []
 
 # get smb and uncertainty in ice sheet basins
-for i, basin in enumerate(hansen_eais_idx_rignot):
+for i, basin in enumerate(hansen_wais_idx_rignot):
     hansen_idx_rignot = np.where(hansen['Drainage Region ID'] == basin)
     smb_hansen_rignot_list.append(
         hansen['Rate of Mass Change (Gt/month)'].iloc[hansen_idx_rignot].values)
@@ -118,7 +116,7 @@ medley = pd.read_csv('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_
 
 # find indices of smb (Zwally region)
 medley_idx_zwally = np.where((medley['Drainage_Region_Set'] == 'Zwally') & (
-    medley['Drainage_Region_ID'] == 'EAIS'))
+    medley['Drainage_Region_ID'] == 'WAIS'))
 # daily time resolution??
 time_medley = medley['Date'].iloc[medley_idx_zwally].values
 smb_medley_zwally = medley['Surface_Mass_Balance'].iloc[medley_idx_zwally].values
@@ -126,7 +124,7 @@ smb_uncert_medley_zwally = medley['Surface_Mass_Balance_Uncertainty'].iloc[medle
 
 # find indices of smb (Rignot region)
 medley_idx_rignot = np.where((medley['Drainage_Region_Set'] == 'Rignot') & (
-    medley['Drainage_Region_ID'] == 'EAIS'))
+    medley['Drainage_Region_ID'] == 'WAIS'))
 smb_medley_rignot = medley['Surface_Mass_Balance'].iloc[medley_idx_rignot].values
 smb_uncert_medley_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[medley_idx_rignot].values
 
@@ -134,11 +132,11 @@ smb_uncert_medley_rignot = medley['Surface_Mass_Balance_Uncertainty'].iloc[medle
 # van Wessem (Racmo ice mask, monthly, uncertainty)
 ########################################
 
-# EAIS Rignot basin numbers = 3,4,9,12,13,14,15,16,17,18
-vwessem_eais_idx = np.array([3, 4, 9, 12, 13, 14, 15, 16, 17, 18]) - 1
+# WAIS Rignot basin numbers = 1,5,8,11,19
+vwessem_wais_idx = np.array([1, 5, 8, 11, 19]) - 1
 ds = xr.open_dataset(
     '/Users/thomas/Documents/github/imbie_partitioning/aux/smb_datasets/van Wessem_surface-mass-balance_6262601bae86e4.66224488/mass-balance-data/ERA5-3H_RACMO2.3p2_ANT27_IMBIE2.nc')
-vwessem = pd.DataFrame(np.array([np.arange(1979, 2022, 1/12), ds.smb[:, vwessem_eais_idx].sum(axis=1)]).T,
+vwessem = pd.DataFrame(np.array([np.arange(1979, 2022, 1/12), ds.smb[:, vwessem_wais_idx].sum(axis=1)]).T,
                        columns=['Time', 'Surface Mass Change'])
 del ds
 # monthly time resolution
@@ -328,9 +326,9 @@ ax1.set_ylim(-250, 350)
 plt.legend(loc='center left',
            bbox_to_anchor=(1, 0.5))
 
-plt.title('East Antarctica')
+plt.title('West Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_datasets_eais.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_datasets_wais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -355,9 +353,9 @@ plt.ylabel('Surface Mass Balance [Gt/month]')
 
 ax1.set_ylim(0, 350)
 
-plt.title('East Antarctica')
+plt.title('West Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_eais.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_wais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -371,6 +369,10 @@ t1_ref, t2_ref = 1979, 2010
 
 smb_ref = smb_combined[(time_combined >= t1_ref) &
                        (time_combined < t2_ref)].mean()
+
+# save reference smb
+np.save('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_ref/smb_ref_wais.npy',
+        smb_ref)
 
 # calculate anomaly
 smb_combined_anom = smb_combined - smb_ref
@@ -394,9 +396,9 @@ plt.xlabel('Year')
 plt.ylabel('Cumulative SMB Anomaly [Gt] \n' +
            '(w.r.t ' + str(t1_ref) + '-' + str(t2_ref) + ')')
 
-plt.title('East Antarctica')
+plt.title('West Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_eais.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_wais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -406,7 +408,7 @@ plt.close(fig)
 # =============================================================================
 # load IMBIE data
 imbie = pd.read_csv(
-    '/Users/thomas/Documents/github/imbie_partitioning/aux/imbie_datasets/imbie_east_antarctica_2021_Gt.csv')
+    '/Users/thomas/Documents/github/imbie_partitioning/aux/imbie_datasets/imbie_west_antarctica_2021_Gt.csv')
 time_imbie = imbie['Year'].values
 dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 
@@ -428,7 +430,7 @@ def dsearchn(x, v):
 t1 = dsearchn(np.floor(time_imbie[0]), time_combined)
 t2 = dsearchn(np.ceil(time_imbie[-1]), time_combined)
 
-# partition as dynamics = dm - SMB
+# partition as dynamics anomaly = dm anomaly - SMB anomaly
 dmdt_dyn_imbie = dmdt_imbie - dmdt_smb_imbie[t1:t2]
 # combine uncertainties
 dmdt_dyn_uncert_imbie = np.sqrt(
@@ -525,9 +527,9 @@ plt.legend(loc='center left',
 plt.xlim(1979, 2021)
 plt.ylim(-5000, 1000)
 
-plt.title('East Antarctica')
+plt.title('West Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/imbie_partitioned_eais.svg',
+plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/imbie_partitioned_wais.svg',
             format='svg', dpi=600, bbox_inches='tight')
 fig.clf()
 plt.close(fig)
@@ -564,5 +566,5 @@ df_out = pd.merge_asof(df_smb, pd.concat([df_dyn, df_dm], axis=1),
 df_out = df_out.replace({np.nan: None})
 
 # save
-df_out.to_csv('/Users/thomas/Documents/github/imbie_partitioning/partitioned_data/imbie_east_antarctica_2021_Gt_partitioned.csv',
+df_out.to_csv('/Users/thomas/Documents/github/imbie_partitioning/partitioned_data/imbie_west_antarctica_2021_Gt_partitioned.csv',
               index=False)

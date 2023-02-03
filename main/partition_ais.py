@@ -502,7 +502,7 @@ def dsearchn(x, v):
 t1 = dsearchn(np.floor(time_imbie[0]), time_combined)
 t2 = dsearchn(np.ceil(time_imbie[-1]), time_combined)
 
-# partition as dynamics = dm - SMB
+# partition as dynamics anomaly = dm anomaly - SMB anomaly
 dmdt_dyn_imbie = dmdt_imbie - dmdt_smb_imbie[t1:t2]
 # combine uncertainties
 dmdt_dyn_uncert_imbie = np.sqrt(
