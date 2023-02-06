@@ -436,44 +436,59 @@ plt.close(fig)
 # 6. Calculate cumulate anomaly of combined SMB
 # =============================================================================
 
+# resample to annual resolution (assumes monthly input in Gt/month)
+
+
+def monthly_to_annual(time, x):
+    time_annual = np.unique(np.floor(time))
+    x_annual = []
+
+    for i, t in enumerate(time_annual):
+        to_avg = x[np.where(np.floor(time) == t)]
+        x_annual.append(to_avg.mean() * 12)
+
+    x_annual = np.array(x_annual, dtype=float)
+
+    return time_annual, x_annual
+
+
+time_combined_annual, smb_combined_annual = monthly_to_annual(
+    time_combined, smb_combined)
+smb_uncert_combined_annual = monthly_to_annual(
+    time_combined, smb_uncert_combined)[1]
+
 # set reference period
 t1_ref, t2_ref = 1979, 2010
 
-smb_ref = smb_combined[(time_combined >= t1_ref) &
-                       (time_combined < t2_ref)].mean()
+smb_ref = smb_combined_annual[(time_combined_annual >= t1_ref) &
+                              (time_combined_annual < t2_ref)].mean()
 
 # save reference smb
 np.save('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_ref/smb_ref_ais.npy',
         smb_ref)
-        
+
 # calculate anomaly
-smb_combined_anom = smb_combined - smb_ref
+smb_combined_anom_annual = smb_combined_annual - smb_ref
 
-# accumulate anomaly
-smb_combined_cumul_anom = smb_combined_anom.cumsum()
-
-# plot cumulative SMB
-fig = plt.figure(figsize=(7, 3), constrained_layout=True)
-gs = plt.GridSpec(1, 1, figure=fig, wspace=0.1)
-
-ax1 = fig.add_subplot(gs[0])
+# redefine monthly time vector
+time_combined = np.arange(
+    time_combined_annual[0], time_combined_annual[-1], (1 / 12)).round(4)
 
 
-ax1.plot(time_combined, smb_combined_cumul_anom,
-         color=cmap(4))
+def annual_oversampler(time_annual, time_monthly, x_annual):
+    x_monthly = np.full_like(time_monthly, np.nan)
 
-ax1.set_ylim(-3000, 750)
+    for i, t in enumerate(time_combined_annual):
+        in_year = np.where((time_combined >= t) & (time_combined < t + 1))
+        x_monthly[in_year] = x_annual[i]
 
-plt.xlabel('Year')
-plt.ylabel('Cumulative SMB Anomaly [Gt] \n' +
-           '(w.r.t ' + str(t1_ref) + '-' + str(t2_ref) + ')')
+    return x_monthly
 
-plt.title('Antarctica')
 
-plt.savefig('/Users/thomas/Documents/github/imbie_partitioning/figs/smb_combined_cumulative_anomaly_ais.svg',
-            format='svg', dpi=600, bbox_inches='tight')
-fig.clf()
-plt.close(fig)
+dmdt_smb_imbie = annual_oversampler(
+    time_combined_annual, time_combined, smb_combined_anom_annual)
+dmdt_smb_uncert_imbie = annual_oversampler(
+    time_combined_annual, time_combined, smb_uncert_combined_annual)
 
 # =============================================================================
 # 7. Partition IMBIE mass balance
@@ -486,12 +501,6 @@ dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 
 dmdt_uncert_imbie = imbie['Mass balance uncertainty (Gt/yr)'].values
 
-# convert SMB anomaly to dM/dt
-dmdt_smb_imbie, num_points = dm_to_dmdt(
-    time_combined, smb_combined_cumul_anom, 36)
-# need to convert from Gt / month to Gt / yr
-dmdt_smb_uncert_imbie = smb_uncert_combined * 12
-
 # function to find index of nearest input value in a given vector
 
 
@@ -503,10 +512,10 @@ t1 = dsearchn(np.floor(time_imbie[0]), time_combined)
 t2 = dsearchn(np.ceil(time_imbie[-1]), time_combined)
 
 # partition as dynamics anomaly = dm anomaly - SMB anomaly
-dmdt_dyn_imbie = dmdt_imbie - dmdt_smb_imbie[t1:t2]
+dmdt_dyn_imbie = dmdt_imbie - dmdt_smb_imbie[t1:t2+1]
 # combine uncertainties
 dmdt_dyn_uncert_imbie = np.sqrt(
-    dmdt_uncert_imbie ** 2 + dmdt_smb_uncert_imbie[t1:t2] ** 2)
+    dmdt_uncert_imbie ** 2 + dmdt_smb_uncert_imbie[t1:t2+1] ** 2)
 
 # integrate for cumulative mass change
 dm_imbie = imbie['Cumulative mass balance (Gt)'].values
@@ -611,24 +620,24 @@ plt.close(fig)
 # =============================================================================
 
 # create dataframe
-df_smb = pd.DataFrame({'Year': time_combined[0:t2],
-                       'Surface mass balance anomaly (Gt/yr)': dmdt_smb_imbie[0:t2],
-                       'Surface mass balance anomaly uncertainty (Gt/yr)': dmdt_smb_uncert_imbie[0:t2],
-                       'Cumulative surface mass balance anomaly (Gt)': dm_smb_imbie[0:t2],
-                       'Cumulative surface mass balance anomaly uncertainty (Gt)': dm_smb_uncert_imbie[0:t2]})
+df_smb = pd.DataFrame({'Year': time_combined[0:t2 + 1],
+                       'Surface mass balance anomaly (Gt/yr)': dmdt_smb_imbie[0:t2 + 1],
+                       'Surface mass balance anomaly uncertainty (Gt/yr)': dmdt_smb_uncert_imbie[0:t2 + 1],
+                       'Cumulative surface mass balance anomaly (Gt)': dm_smb_imbie[0:t2 + 1],
+                       'Cumulative surface mass balance anomaly uncertainty (Gt)': dm_smb_uncert_imbie[0:t2 + 1]})
 
 df_dm = pd.DataFrame({'Mass balance (Gt/yr)': dmdt_imbie,
                       'Mass balance uncertainty (Gt/yr)': dmdt_uncert_imbie,
                       'Cumulative mass balance (Gt)': dm_imbie,
                       'Cumulative mass balance uncertainty (Gt)': dm_uncert_imbie})
 # set index for merging
-df_dm = df_dm.set_index(np.arange(t1, t2, 1))
+df_dm = df_dm.set_index(np.arange(t1, t2 + 1, 1))
 
 df_dyn = pd.DataFrame({'Dynamics mass balance anomaly (Gt/yr)': dmdt_dyn_imbie,
                        'Dynamics mass balance anomaly uncertainty (Gt/yr)': dmdt_dyn_uncert_imbie,
                        'Cumulative dynamics mass balance anomaly (Gt)': dm_dyn_imbie,
                        'Cumulative dynamics mass balance anomaly uncertainty (Gt)': dm_dyn_uncert_imbie})
-df_dyn = df_dyn.set_index(np.arange(t1, t2, 1))
+df_dyn = df_dyn.set_index(np.arange(t1, t2 + 1, 1))
 
 # merge dataframes
 df_out = pd.merge_asof(df_smb, pd.concat([df_dyn, df_dm], axis=1),

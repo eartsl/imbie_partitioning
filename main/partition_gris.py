@@ -260,7 +260,9 @@ plt.close(fig)
 # 6. Calculate cumulate anomaly of combined SMB
 # =============================================================================
 
-# resample to annual resolution
+# resample to annual resolution (assumes monthly input in Gt/month)
+
+
 def monthly_to_annual(time, x):
     time_annual = np.unique(np.floor(time))
     x_annual = []
@@ -268,19 +270,22 @@ def monthly_to_annual(time, x):
     for i, t in enumerate(time_annual):
         to_avg = x[np.where(np.floor(time) == t)]
         x_annual.append(to_avg.mean() * 12)
-    
+
     x_annual = np.array(x_annual, dtype=float)
 
     return time_annual, x_annual
 
-time_combined_annual, smb_combined_annual = monthly_to_annual(time_combined, smb_combined)
-smb_uncert_combined_annual = monthly_to_annual(time_combined, smb_uncert_combined)[1]
+
+time_combined_annual, smb_combined_annual = monthly_to_annual(
+    time_combined, smb_combined)
+smb_uncert_combined_annual = monthly_to_annual(
+    time_combined, smb_uncert_combined)[1]
 
 # set reference period
 t1_ref, t2_ref = 1960, 1990
 
 smb_ref = smb_combined_annual[(time_combined_annual >= t1_ref) &
-                       (time_combined_annual < t2_ref)].mean()
+                              (time_combined_annual < t2_ref)].mean()
 
 # save reference smb
 np.save('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_ref/smb_ref_gris.npy',
@@ -290,19 +295,24 @@ np.save('/Users/thomas/Documents/github/imbie_partitioning/aux/smb_ref/smb_ref_g
 smb_combined_anom_annual = smb_combined_annual - smb_ref
 
 # redefine monthly time vector
-time_combined = np.arange(time_combined_annual[0],time_combined_annual[-1],(1 / 12)).round(4)
+time_combined = np.arange(
+    time_combined_annual[0], time_combined_annual[-1], (1 / 12)).round(4)
+
 
 def annual_oversampler(time_annual, time_monthly, x_annual):
     x_monthly = np.full_like(time_monthly, np.nan)
 
     for i, t in enumerate(time_combined_annual):
-        in_year = np.where((time_combined_monthly >= t) & (time_combined_monthly < t + 1))
+        in_year = np.where((time_combined >= t) & (time_combined < t + 1))
         x_monthly[in_year] = x_annual[i]
-    
+
     return x_monthly
 
-dmdt_smb_imbie = annual_oversampler(time_combined_annual, time_combined, smb_combined_anom_annual)
-dmdt_smb_uncert_imbie = annual_oversampler(time_combined_annual, time_combined, smb_uncert_combined_annual)
+
+dmdt_smb_imbie = annual_oversampler(
+    time_combined_annual, time_combined, smb_combined_anom_annual)
+dmdt_smb_uncert_imbie = annual_oversampler(
+    time_combined_annual, time_combined, smb_uncert_combined_annual)
 
 # =============================================================================
 # 7. Partition IMBIE mass balance
@@ -316,6 +326,8 @@ dmdt_imbie = imbie['Mass balance (Gt/yr)'].values
 dmdt_uncert_imbie = imbie['Mass balance uncertainty (Gt/yr)'].values
 
 # function to find index of nearest input value in a given vector
+
+
 def dsearchn(x, v):
     return int(np.where(np.abs(x - v) == np.abs(x - v).min())[0])
 
