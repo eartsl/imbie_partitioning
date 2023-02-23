@@ -67,12 +67,11 @@ discharge_ra_cpom = dmdt_ra_cpom - basin_smb_anom_dmdt_1992_2017
 # convert partitioned discharge from anomaly to absolute values
 discharge_ra_cpom_abs = basin_smb_ref - discharge_ra_cpom
 
-# need reference SMB for each basin
-smb_rignot = pd.read_excel('/Users/thomas/Documents/github/imbie_partitioning/aux/iom_datasets/pnas.1812883116.sd01_basins_discharge_1992_2017.xlsx',sheet_name='basins_smb_ref_1992_2017')
-smb_ref_rignot = smb_rignot['SMB_ref (Gt/yr)'].values
-
 # adjust for differences in reference smb
-discharge_ra_cpom_abs = discharge_ra_cpom_abs - (basin_smb_ref - smb_ref_rignot)
+# need Rignot reference SMB for each basin
+# smb_rignot = pd.read_excel('/Users/thomas/Documents/github/imbie_partitioning/aux/iom_datasets/pnas.1812883116.sd01_basins_discharge_1992_2017.xlsx',sheet_name='basins_smb_ref_1992_2017')
+# smb_ref_rignot = smb_rignot['SMB_ref (Gt/yr)'].values
+# discharge_ra_cpom_abs = discharge_ra_cpom_abs - (basin_smb_ref - smb_ref_rignot)
 
 
 # =============================================================================
