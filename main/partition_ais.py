@@ -12,7 +12,6 @@ Created on Thu Jan 12 11:02:15 2023
 
 ## imports ##
 
-from dm_to_dmdt import dm_to_dmdt
 import matplotlib.pyplot as plt
 from datetime import datetime
 import xarray as xr
