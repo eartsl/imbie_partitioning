@@ -208,7 +208,7 @@ for i, basin in enumerate(basins):
 
 ax2.axis('off')
 
-sm = plt.cm.ScalarMappable(cmap=cmap_mb, norm=norm)
+sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
 sm.set_array(discharge_rignot_basins.astype(
     float) - discharge_ra_cpom_abs.astype(float))
 
